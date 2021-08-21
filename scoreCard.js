@@ -1,6 +1,7 @@
 let request = require("request");
 let cheerio = require("cheerio");
 let fs = require("fs");
+const { createDecipher, createDecipheriv } = require("crypto");
 let url = "https://www.espncricinfo.com/series/ipl-2020-21-1210595";
 //console.log("Before");
 function processSinglematch(url)
@@ -57,25 +58,30 @@ function dataExtractor(html)
 module.exports = {
     processSinglematch
 }
-function finalprocessingPlayer(teamname,playername,runs,balls,fours,sixes,sr,opponentteamname,venue,date,result1){
-    let teamPath=path.join(_dirname,"ipl",teamname)
-    let inputdata={
-        teamname,
-        playername,
-        runs,
-        balls,
-        fours,
-        sixes,
-        sr,
-        opponentteamname,
-        venue,
-        date,
-        result1
+function finalprocessingPlayer(teamname,playername,runs,balls,fours,sixes,sr,opponentname,venue,date,result1){
+    let teamPath=path.join(_dirname,"ipl",teamname);
+    createDir(teamPath);
+    let filePath=path.join(teamPath,playername+".json");
+    let dataArray={};
+    let playerInfo={
+        "Player Name"    :playername,
+        "Opponent Name"  :opponentname,
+        "Runs"           :runs,
+        "Balls"          :balls,
+        "Fours"          :fours,
+        "Sixes"          :sixes,
+        "StrikeRate"     :sr,
+    };
+    if(fs.existSync(filePath)){
+        let data=fs.readFileSync(filePath);
+        dataArray=JSON.parse(data);
     }
-    dircre(teamPath);
-    let PlayerPath=path.join(teamPath,playername + ".json");
-    let jsonWriteable=JSON.stringify(inputdata);
-    fs.writeFileSync(Playerpath,jsonwriteable);
+    dataArray.push(playerInfo);
+    let sData=JSON.stringify(dataArray);
+    fs.writeFileSync(filePath,sData);
 }
-
-
+function createDir(fpath){
+    if(fs.existsSync(fpath)==false){
+        fs.mkdirSync(fpath);
+    }
+}
