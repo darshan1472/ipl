@@ -18,6 +18,7 @@
   "homepage": "https://github.com/darshan1472/ipl#readme",
   "dependencies": {
     "cheerio": "^1.0.0-rc.10",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "xlsx": "^0.17.1"
   }
 }
