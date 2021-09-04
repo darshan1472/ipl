@@ -1,9 +1,9 @@
 // let url = "https://www.espncricinfo.com/series/ipl-2020-21-1210595/mumbai-indians-vs-chennai-super-kings-1st-match-1216492/full-scorecard";
-let request = require("request");
-let cheerio = require("cheerio");
-let fs = require("fs");
-let path = require("path");
-let xlsx = require("xlsx");
+const request = require("request");
+const cheerio = require("cheerio");
+const fs = require("fs");
+const path = require("path");
+const xlsx = require("xlsx");
 function processSinglematch(url) {
 
     request(url, cb);
@@ -22,6 +22,13 @@ function cb(error, response, html) {
 }
 function dataExtracter(html) {
     let searchTool = cheerio.load(html)
+    let description=searchTool(".header-info .description");
+    let result=searchTool(".event .match-info.match-info-MATCH .status-text");
+    let strArr=description.text().split(",");
+    let venue=strArr[1].trim();
+    let date=strArr[2].trim();
+    let res=result.text();
+   
     // team name
     let bothInningArr = searchTool(".Collapsible");
     for (let i = 0; i < bothInningArr.length; i++) {
@@ -32,6 +39,15 @@ function dataExtracter(html) {
         teamName = teamName.split("INNINGS")[0];
         // console.log(teamName);
         teamName = teamName.trim();
+        //lets find opponent team name
+        let opponentidx=i==0? 1 : 0;
+        let opponentTeamName=searchTool(bothInningArr[opponentidx]).find("h5").text();
+        opponentTeamName=opponentTeamName.split("innings")[0];
+        opponentTeamName=opponentTeamName.trim();
+        //here we finded all teams and opponent teams
+       
+       
+
         // console.log(teamName);
         let batsManTableBodyAllRows = searchTool(bothInningArr[i]).find(".table.batsman tbody tr");
         console.log(batsManTableBodyAllRows.length)
@@ -46,9 +62,12 @@ function dataExtracter(html) {
                 let balls = searchTool(numberofTds[3]).text();
                 let fours = searchTool(numberofTds[5]).text();
                 let sixes = searchTool(numberofTds[6]).text();
+                let sr    =searchTool(numberofTds[7]).text();
+               
                 // myTeamName	name	venue	date opponentTeamName	result	runs	balls	fours	sixes	sr
-                console.log(playerName, "played for", teamName, "scored", runs, "in", balls, "with ", fours, "fours and ", sixes, "sixes");
-                processPlayer(playerName, teamName, runs, balls, fours, sixes);
+                console.log(playerName, "played for", teamName, "scored", runs, "runs in", balls, "balls with ", fours, "fours and ", sixes, "sixes with",sr,"sr vs",opponentTeamName," And",res," which is played at",venue, 
+                "on",date,"date");
+                processPlayer(playerName, teamName, runs, balls, fours, sixes,sr,opponentTeamName,venue,date,result);
             }
         }
         console.log("````````")
@@ -56,14 +75,20 @@ function dataExtracter(html) {
     }
     // players name
 }
-function processPlayer(playerName, teamName, runs, balls, fours, sixes) {
+function processPlayer(playerName, teamName, runs, balls, fours, sixes,sr,opponentTeamName,venue,date,result) {
     let obj = {
         playerName,
         teamName,
         runs,
         balls,
         fours,
-        sixes
+        sixes,
+        sr,
+        opponentTeamName,
+        venue,
+        date,
+        result
+        
     }
     let dirPath = path.join(__dirname, teamName);
     //    folder 
@@ -119,3 +144,5 @@ function excelReader(filePath, sheetName) {
     let ans = xlsx.utils.sheet_to_json(excelData);
     return ans;
 }
+//venue and date .event.description
+// result .event.status-text

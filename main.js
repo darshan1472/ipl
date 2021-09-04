@@ -1,8 +1,8 @@
-let request = require("request");
-let cheerio = require("cheerio");
-let url = "https://www.espncricinfo.com/series/ipl-2020-21-1210595";
+const request = require("request");
+const cheerio = require("cheerio");
+const url = "https://www.espncricinfo.com/series/ipl-2020-21-1210595";
 console.log("Before");
-let scoreCardObj = require("./scoreCard");
+const scoreCardObj = require("./scoreCard");
 request(url, cb);
 function cb (error, response, html) {
     if(error){
